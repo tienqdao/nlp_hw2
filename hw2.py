@@ -2,11 +2,12 @@
 
 from nltk.stem import WordNetLemmatizer, PorterStemmer
 from sklearn.feature_extraction.text import CountVectorizer
-import sklearn.naive_bayes
+from sklearn.naive_bayes import MultinomialNB
 import random
 from collections import Counter
 import math
 import re
+import json
 
 # Global variables to store n-gram models - Tien:
 _ngram_model = {
@@ -156,8 +157,36 @@ trainFile: A jsonlist file, where each line is a json object. Each object contai
 	"review": A string which is the review of a movie
 	"sentiment": A Boolean value, True if it was a positive review, False if it was a negative review.
 """
+# Global variables to store Naive Bayes models - Dat:
+global_vectorizer = None
+global_model = None
+
 def calcSentiment_train(trainFile):
-	pass #don't return anything from this function!
+    global global_vectorizer, global_model
+
+    # Load the training data
+    reviews = []
+    sentiments = []
+
+    # Read the jsonlist file line by line
+    with open(trainFile, "r", encoding="utf-8") as f:
+        for line in f:
+            # Parse each line as a separate json object and extract the review and sentiment
+            data = json.loads(line.strip())
+            reviews.append(data["review"])
+            sentiments.append(data["sentiment"])
+
+    # Initialize the vectorizer to remove English stopwords and count word frequencies
+    global_vectorizer = CountVectorizer(stop_words="english")
+    # fit_transform learns the vocabulary AND converts the text into a mathematical matrix
+    X_train = global_vectorizer.fit_transform(reviews)
+
+    # MultinomialNB is the standard Naive Bayes algorithm for text classification
+    global_model = MultinomialNB()
+    # Train the model using the vectorized reviews and their boolean labels
+    global_model.fit(X_train, sentiments)
+    
+    pass #don't return anything from this function!
 
 """
 review: A string which is a review of a movie
@@ -165,4 +194,13 @@ Return a boolean which is the predicted sentiment of the review.
 Must run in under 120 seconds, and must use Naive Bayes
 """
 def calcSentiment_test(review):
-	return random.choice([True, False])
+    # Access the trained global variables
+    global global_vectorizer, global_model
+
+    # Vectorize the single string.
+    X_test = global_vectorizer.transform([review])
+    # Predict the sentiment. The output is an array of predictions, we just want the first one.
+    prediction = global_model.predict(X_test)[0]
+
+    # Convert to standard Python boolean and return
+    return bool(prediction)

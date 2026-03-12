@@ -87,11 +87,11 @@ one of the worst horror films in years .
 CORRECT OUTPUT:
 False
 YOUR OUTPUT:
-True
-Incorrect
+False
+Correct!
 
-You got 50.0% correct: +0.0/50 points
+You got 100.0% correct: +60/50 points
 ==============================
 ==============================
 ==============================
-FINAL SCORE:50.0
+FINAL SCORE:110
